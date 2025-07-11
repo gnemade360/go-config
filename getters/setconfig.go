@@ -1,7 +1,7 @@
 package getters
 
 import (
-	"github.com/passionintellectual/go-config/configutil"
+	"github.com/gnemade360/go-config/configutil"
 )
 
 // SetConfig reads a configuration value and calls the setter function if successful

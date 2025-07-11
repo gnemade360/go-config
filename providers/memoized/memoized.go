@@ -3,7 +3,7 @@ package memoized
 import (
 	"sync"
 
-	"github.com/passionintellectual/go-config"
+	"github.com/gnemade360/go-config"
 )
 
 // ConfigKeyType represents a configuration key

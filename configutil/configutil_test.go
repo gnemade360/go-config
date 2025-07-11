@@ -5,7 +5,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/passionintellectual/go-config/configutil"
+	"github.com/gnemade360/go-config/configutil"
 )
 
 // mockProvider implements the Provider interface for testing

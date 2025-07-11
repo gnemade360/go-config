@@ -7,8 +7,8 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/passionintellectual/go-config/internal/filereader"
-	"github.com/passionintellectual/go-map-navigator/pkg/mapnavigator"
+	"github.com/gnemade360/go-config/internal/filereader"
+	"github.com/gnemade360/go-map-navigator/pkg/mapnavigator"
 )
 
 // ConfigNotFoundError is returned when a configuration key is not found
@@ -53,7 +53,7 @@ func (p *Provider) loadContent() error {
 			p.loadErr = err
 			return
 		}
-		
+
 		if p.UnMarshaller == nil {
 			p.UnMarshaller = filereader.GetUnMarshaller(p.FilePath)
 			if p.UnMarshaller == nil {
@@ -61,7 +61,7 @@ func (p *Provider) loadContent() error {
 				return
 			}
 		}
-		
+
 		p.loadErr = p.UnMarshaller(byts, &p.FileContent)
 		if p.loadErr == nil {
 			// Process ENV| prefix for all values

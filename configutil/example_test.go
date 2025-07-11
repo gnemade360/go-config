@@ -6,10 +6,10 @@ import (
 	"os"
 	"time"
 
-	"github.com/passionintellectual/go-config"
-	"github.com/passionintellectual/go-config/configutil"
-	"github.com/passionintellectual/go-config/providers/env"
-	"github.com/passionintellectual/go-config/providers/file"
+	"github.com/gnemade360/go-config"
+	"github.com/gnemade360/go-config/configutil"
+	"github.com/gnemade360/go-config/providers/env"
+	"github.com/gnemade360/go-config/providers/file"
 )
 
 // ExampleGetStringE demonstrates reading string values with error handling.

@@ -8,8 +8,8 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/passionintellectual/go-config"
-	"github.com/passionintellectual/go-map-navigator/pkg/mapnavigator"
+	"github.com/gnemade360/go-config"
+	"github.com/gnemade360/go-map-navigator/pkg/mapnavigator"
 )
 
 // Provider reads configuration from command-line flags

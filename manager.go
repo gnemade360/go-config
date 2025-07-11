@@ -1,11 +1,11 @@
 package config
 
 import (
-	"github.com/passionintellectual/go-config/providers/env"
-	"github.com/passionintellectual/go-config/providers/file"
-	"github.com/passionintellectual/go-config/providers/flag"
-	"github.com/passionintellectual/go-config/providers/memoized"
-	"github.com/passionintellectual/go-config/providers/sequential"
+	"github.com/gnemade360/go-config/providers/env"
+	"github.com/gnemade360/go-config/providers/file"
+	"github.com/gnemade360/go-config/providers/flag"
+	"github.com/gnemade360/go-config/providers/memoized"
+	"github.com/gnemade360/go-config/providers/sequential"
 )
 
 // Manager manages configuration providers and provides a high-level API

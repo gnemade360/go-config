@@ -1,7 +1,7 @@
 package getters
 
 import (
-	"github.com/passionintellectual/go-config/configutil"
+	"github.com/gnemade360/go-config/configutil"
 )
 
 // Get reads a configuration value and converts it to the specified type T

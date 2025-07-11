@@ -5,7 +5,7 @@ import (
 	"sync"
 	"testing"
 	
-	"github.com/passionintellectual/go-config"
+	"github.com/gnemade360/go-config"
 )
 
 // mockProvider for testing

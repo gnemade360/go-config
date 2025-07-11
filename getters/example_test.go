@@ -5,10 +5,10 @@ import (
 	"log"
 	"os"
 
-	"github.com/passionintellectual/go-config"
-	"github.com/passionintellectual/go-config/getters"
-	"github.com/passionintellectual/go-config/providers/env"
-	"github.com/passionintellectual/go-config/providers/file"
+	"github.com/gnemade360/go-config"
+	"github.com/gnemade360/go-config/getters"
+	"github.com/gnemade360/go-config/providers/env"
+	"github.com/gnemade360/go-config/providers/file"
 )
 
 // ExampleGet demonstrates generic configuration reading with error handling.

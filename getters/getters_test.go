@@ -3,8 +3,8 @@ package getters_test
 import (
 	"testing"
 
-	"github.com/passionintellectual/go-config/configutil"
-	"github.com/passionintellectual/go-config/getters"
+	"github.com/gnemade360/go-config/configutil"
+	"github.com/gnemade360/go-config/getters"
 )
 
 // mockProvider implements the Provider interface for testing

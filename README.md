@@ -1,11 +1,11 @@
 # go-config
 
-**Created by [Ganesh Nemade](https://github.com/passionintellectual)**
+**Created by [Ganesh Nemade](https://github.com/gnemade360)**
 
-[![Go Reference](https://pkg.go.dev/badge/github.com/passionintellectual/go-config.svg)](https://pkg.go.dev/github.com/passionintellectual/go-config)
-[![Go Report Card](https://goreportcard.com/badge/github.com/passionintellectual/go-config)](https://goreportcard.com/report/github.com/passionintellectual/go-config)
+[![Go Reference](https://pkg.go.dev/badge/github.com/gnemade360/go-config.svg)](https://pkg.go.dev/github.com/gnemade360/go-config)
+[![Go Report Card](https://goreportcard.com/badge/github.com/gnemade360/go-config)](https://goreportcard.com/report/github.com/gnemade360/go-config)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Go Version](https://img.shields.io/github/go-mod/go-version/passionintellectual/go-config)](https://github.com/passionintellectual/go-config)
+[![Go Version](https://img.shields.io/github/go-mod/go-version/gnemade360/go-config)](https://github.com/gnemade360/go-config)
 
 A powerful, flexible, and extensible configuration management library for Go applications. Supports multiple configuration sources with a clean, type-safe API and Go 1.18+ generics.
 
@@ -36,7 +36,7 @@ A powerful, flexible, and extensible configuration management library for Go app
 ## Installation
 
 ```bash
-go get github.com/passionintellectual/go-config
+go get github.com/gnemade360/go-config
 ```
 
 ## Requirements
@@ -52,24 +52,24 @@ package main
 import (
     "fmt"
     "log"
-    
-    "github.com/passionintellectual/go-config"
-    "github.com/passionintellectual/go-config/configutil"
+
+    "github.com/gnemade360/go-config"
+    "github.com/gnemade360/go-config/configutil"
 )
 
 func main() {
     // Create a manager with default providers (env + flags)
     manager := config.NewDefaultManager()
-    
+
     // Read configuration values
     dbHost, err := manager.GetString("db.host")
     if err != nil {
         log.Fatal(err)
     }
-    
+
     // Use generic functions for type safety
     port := configutil.GetInt(manager.GetProvider(), "db.port", 5432)
-    
+
     fmt.Printf("Database: %s:%d\n", dbHost, port)
 }
 ```
@@ -116,7 +116,7 @@ The `configutil` package provides type-safe methods following a consistent namin
 - Methods with "Must" prefix panic on error
 
 ```go
-import "github.com/passionintellectual/go-config/configutil"
+import "github.com/gnemade360/go-config/configutil"
 
 // Error-returning methods (with E suffix)
 name, err := configutil.GetStringE(provider, "app.name")
@@ -142,7 +142,7 @@ err := configutil.BindE(provider, "database", &dbConfig)
 ### Global Configuration (Singleton Pattern)
 
 ```go
-import "github.com/passionintellectual/go-config/configutil"
+import "github.com/gnemade360/go-config/configutil"
 
 // Initialize once at application startup
 func init() {
@@ -156,13 +156,13 @@ func init() {
 func main() {
     // Get the provider and use with configutil methods
     provider := configutil.GetProvider()
-    
+
     port := configutil.GetInt(provider, "server.port", 8080)
     dbHost := configutil.MustGetString(provider, "database.host")
-    
+
     // Or read directly
     value, err := configutil.Read("some.key")
-    
+
     // Check if config exists
     if configutil.IsSet(provider, "redis.url") {
         redisURL := configutil.GetString(provider, "redis.url", "")
@@ -301,22 +301,22 @@ if err != nil {
 
 ## API Reference
 
-For detailed API documentation, visit [pkg.go.dev](https://pkg.go.dev/github.com/passionintellectual/go-config).
+For detailed API documentation, visit [pkg.go.dev](https://pkg.go.dev/github.com/gnemade360/go-config).
 
 ### Core Packages
 
-- **[config](https://pkg.go.dev/github.com/passionintellectual/go-config)** - Main package with Provider interface and Manager
-- **[configutil](https://pkg.go.dev/github.com/passionintellectual/go-config/configutil)** - Type-safe configuration utilities
-- **[getters](https://pkg.go.dev/github.com/passionintellectual/go-config/getters)** - Simplified generic configuration access
-- **[goconfig](https://pkg.go.dev/github.com/passionintellectual/go-config/goconfig)** - Simple singleton-based configuration
+- **[config](https://pkg.go.dev/github.com/gnemade360/go-config)** - Main package with Provider interface and Manager
+- **[configutil](https://pkg.go.dev/github.com/gnemade360/go-config/configutil)** - Type-safe configuration utilities
+- **[getters](https://pkg.go.dev/github.com/gnemade360/go-config/getters)** - Simplified generic configuration access
+- **[goconfig](https://pkg.go.dev/github.com/gnemade360/go-config/goconfig)** - Simple singleton-based configuration
 
 ### Provider Packages
 
-- **[env](https://pkg.go.dev/github.com/passionintellectual/go-config/providers/env)** - Environment variable provider
-- **[file](https://pkg.go.dev/github.com/passionintellectual/go-config/providers/file)** - JSON/YAML file provider
-- **[flag](https://pkg.go.dev/github.com/passionintellectual/go-config/providers/flag)** - Command-line flag provider
-- **[sequential](https://pkg.go.dev/github.com/passionintellectual/go-config/providers/sequential)** - Layered provider chain
-- **[memoized](https://pkg.go.dev/github.com/passionintellectual/go-config/providers/memoized)** - Caching provider wrapper
+- **[env](https://pkg.go.dev/github.com/gnemade360/go-config/providers/env)** - Environment variable provider
+- **[file](https://pkg.go.dev/github.com/gnemade360/go-config/providers/file)** - JSON/YAML file provider
+- **[flag](https://pkg.go.dev/github.com/gnemade360/go-config/providers/flag)** - Command-line flag provider
+- **[sequential](https://pkg.go.dev/github.com/gnemade360/go-config/providers/sequential)** - Layered provider chain
+- **[memoized](https://pkg.go.dev/github.com/gnemade360/go-config/providers/memoized)** - Caching provider wrapper
 
 ## Best Practices
 
@@ -330,8 +330,8 @@ For detailed API documentation, visit [pkg.go.dev](https://pkg.go.dev/github.com
 ## Author
 
 **Ganesh Nemade** - *Creator and Maintainer*
-- GitHub: [@passionintellectual](https://github.com/passionintellectual)
-- Email: [Contact via GitHub](https://github.com/passionintellectual)
+- GitHub: [@gnemade360](https://github.com/gnemade360)
+- Email: [Contact via GitHub](https://github.com/gnemade360)
 
 ## Contributing
 
@@ -341,7 +341,7 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 
 ```bash
 # Clone the repository
-git clone https://github.com/passionintellectual/go-config.git
+git clone https://github.com/gnemade360/go-config.git
 cd go-config
 
 # Install dependencies

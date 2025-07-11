@@ -1,7 +1,7 @@
 package getters
 
 import (
-	"github.com/passionintellectual/go-config/configutil"
+	"github.com/gnemade360/go-config/configutil"
 )
 
 // GetStringWithDefault reads a string configuration value, returns default on error

@@ -3,11 +3,11 @@ package goconfig
 import (
 	"sync"
 
-	"github.com/passionintellectual/go-config"
-	"github.com/passionintellectual/go-config/providers/env"
-	"github.com/passionintellectual/go-config/providers/file"
-	"github.com/passionintellectual/go-config/providers/flag"
-	"github.com/passionintellectual/go-config/providers/sequential"
+	"github.com/gnemade360/go-config"
+	"github.com/gnemade360/go-config/providers/env"
+	"github.com/gnemade360/go-config/providers/file"
+	"github.com/gnemade360/go-config/providers/flag"
+	"github.com/gnemade360/go-config/providers/sequential"
 )
 
 // config is the internal singleton instance
@@ -25,7 +25,7 @@ var (
 // initialize creates the singleton instance with default providers
 func initialize() {
 	instance = &config{}
-	
+
 	// Create default providers in order of precedence
 	// 1. Environment variables (highest priority)
 	// 2. Command line flags
@@ -33,7 +33,7 @@ func initialize() {
 	envProvider := env.New()
 	flagProvider := flag.New()
 	fileProvider := file.New()
-	
+
 	// Create sequential provider with default providers
 	seqProvider := sequential.New(
 		sequential.WithProviders(
@@ -42,7 +42,7 @@ func initialize() {
 			fileProvider,
 		),
 	)
-	
+
 	instance.provider = seqProvider
 }
 
@@ -57,7 +57,7 @@ func Read(key string) (interface{}, error) {
 	c := getInstance()
 	c.mu.RLock()
 	defer c.mu.RUnlock()
-	
+
 	return c.provider.Read(key)
 }
 
@@ -67,7 +67,7 @@ func SetProvider(provider config.Provider) {
 	c := getInstance()
 	c.mu.Lock()
 	defer c.mu.Unlock()
-	
+
 	c.provider = provider
 }
 
@@ -76,7 +76,7 @@ func AddFileConfig(path string) error {
 	c := getInstance()
 	c.mu.Lock()
 	defer c.mu.Unlock()
-	
+
 	// If using sequential provider, we need to update the file provider within it
 	if seqProvider, ok := c.provider.(*sequential.Provider); ok {
 		// This would require sequential provider to expose a method to update its providers
@@ -84,7 +84,7 @@ func AddFileConfig(path string) error {
 		envProvider := env.New()
 		flagProvider := flag.New()
 		fileProvider := file.New(file.WithFilePath(path))
-		
+
 		newSeqProvider := sequential.New(
 			sequential.WithProviders(
 				envProvider,
@@ -92,10 +92,10 @@ func AddFileConfig(path string) error {
 				fileProvider,
 			),
 		)
-		
+
 		c.provider = newSeqProvider
 	}
-	
+
 	return nil
 }
 
@@ -105,12 +105,12 @@ func ReadString(key string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	
+
 	str, ok := val.(string)
 	if !ok {
 		return "", &config.ConfigNotFoundError{Key: key}
 	}
-	
+
 	return str, nil
 }
 
@@ -120,7 +120,7 @@ func ReadInt(key string) (int, error) {
 	if err != nil {
 		return 0, err
 	}
-	
+
 	switch v := val.(type) {
 	case int:
 		return v, nil
@@ -139,11 +139,11 @@ func ReadBool(key string) (bool, error) {
 	if err != nil {
 		return false, err
 	}
-	
+
 	b, ok := val.(bool)
 	if !ok {
 		return false, &config.ConfigNotFoundError{Key: key}
 	}
-	
+
 	return b, nil
 }

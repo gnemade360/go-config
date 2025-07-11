@@ -2,7 +2,7 @@
 // management library for Go applications. It supports multiple configuration
 // sources with a clean, type-safe API and Go 1.18+ generics.
 //
-// Created by Ganesh Nemade (https://github.com/passionintellectual)
+// Created by Ganesh Nemade (https://github.com/gnemade360)
 //
 // The library follows a provider-based architecture where each configuration
 // source (environment variables, files, command-line flags) implements the
@@ -33,7 +33,7 @@
 //
 // Use the configutil package for type-safe configuration access:
 //
-//	import "github.com/passionintellectual/go-config/configutil"
+//	import "github.com/gnemade360/go-config/configutil"
 //
 //	// With error handling
 //	port, err := configutil.GetIntE(provider, "server.port")
@@ -91,7 +91,7 @@
 // # Author
 //
 // This library was created and is maintained by Ganesh Nemade.
-// GitHub: https://github.com/passionintellectual
+// GitHub: https://github.com/gnemade360
 //
 // For support, questions, or contributions, please visit the GitHub repository.
 package config

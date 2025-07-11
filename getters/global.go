@@ -3,7 +3,7 @@ package getters
 import (
 	"sync"
 
-	"github.com/passionintellectual/go-config/configutil"
+	"github.com/gnemade360/go-config/configutil"
 )
 
 // Global singleton instance management

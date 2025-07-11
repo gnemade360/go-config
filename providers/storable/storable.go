@@ -3,7 +3,7 @@ package storable
 import (
 	"sync"
 	
-	"github.com/passionintellectual/go-config"
+	"github.com/gnemade360/go-config"
 )
 
 // Provider is a configuration provider that supports dynamic storage

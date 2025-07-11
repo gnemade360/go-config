@@ -32,8 +32,8 @@ The singleton methods are now available in `global.go` with a `Global` prefix to
 
 ```go
 import (
-    "github.com/passionintellectual/go-config/getters"
-    "github.com/passionintellectual/go-config/providers/env"
+    "github.com/gnemade360/go-config/getters"
+    "github.com/gnemade360/go-config/providers/env"
 )
 
 // Use provider-based methods
