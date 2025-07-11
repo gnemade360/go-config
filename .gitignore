@@ -28,5 +28,12 @@ go.work.sum
 .env
 
 # Editor/IDE
-# .idea/
+.idea/
 # .vscode/
+
+# Project specific directories
+.claude/
+.cursor/
+.gdndocs/
+.taskmaster/
+CLAUDE.md
