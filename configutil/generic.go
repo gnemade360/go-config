@@ -1,4 +1,4 @@
-package config
+package configutil
 
 import (
 	"encoding/json"
@@ -6,74 +6,70 @@ import (
 	"reflect"
 )
 
-// Get reads a configuration value and converts it to the specified type T
-func Get[T any](provider Provider, key string) (T, error) {
+// GetE reads a configuration value and converts it to the specified type T.
+// The type parameter T can be any type that the configuration value can be converted to.
+// The provider parameter specifies the configuration provider to use.
+// The key parameter specifies the configuration key to retrieve.
+// Returns the value of type T and nil error on success, or the zero value of T and
+// an error if the key is not found or the value cannot be converted.
+// Uses JSON marshaling/unmarshaling for complex type conversions when direct
+// type assertion fails.
+func GetE[T any](provider Provider, key string) (T, error) {
 	var zero T
-	
+
 	value, err := provider.Read(key)
 	if err != nil {
 		return zero, err
 	}
-	
+
 	// If value is already of type T, return it directly
 	if v, ok := value.(T); ok {
 		return v, nil
 	}
-	
+
 	// Handle common conversions
 	targetType := reflect.TypeOf(zero)
-	
+
 	// If target is interface{}, just return the value
 	if targetType == nil {
 		if v, ok := any(zero).(T); ok {
 			return v, nil
 		}
 	}
-	
+
 	// Try JSON marshaling/unmarshaling for complex types
 	jsonBytes, err := json.Marshal(value)
 	if err != nil {
 		return zero, fmt.Errorf("cannot convert %T to %T: %w", value, zero, err)
 	}
-	
+
 	var result T
 	if err := json.Unmarshal(jsonBytes, &result); err != nil {
 		return zero, fmt.Errorf("cannot convert %T to %T: %w", value, zero, err)
 	}
-	
+
 	return result, nil
 }
 
-// MustGet reads a configuration value and converts it to type T, panics on error
-func MustGet[T any](provider Provider, key string) T {
-	v, err := Get[T](provider, key)
-	if err != nil {
-		panic(fmt.Sprintf("failed to get %T for key %s: %v", v, key, err))
-	}
-	return v
-}
-
-// GetWithDefault reads a configuration value and converts it to type T, returns default on error
-func GetWithDefault[T any](provider Provider, key string, defaultValue T) T {
-	v, err := Get[T](provider, key)
-	if err != nil {
-		return defaultValue
-	}
-	return v
-}
-
-// GetSlice reads a configuration value as a slice of type T
-func GetSlice[T any](provider Provider, key string) ([]T, error) {
+// GetSliceE reads a configuration value as a slice of type T.
+// The type parameter T specifies the element type of the slice.
+// The provider parameter specifies the configuration provider to use.
+// The key parameter specifies the configuration key to retrieve.
+// Returns a slice of type T and nil error on success, or nil and an error if
+// the key is not found or the value cannot be converted to a slice of T.
+// Supports conversion from []T, []interface{}, and uses JSON marshaling/unmarshaling
+// for complex type conversions.
+func GetSliceE[T any](provider Provider, key string) ([]T, error) {
 	value, err := provider.Read(key)
 	if err != nil {
 		return nil, err
 	}
-	
+
 	// If value is already []T, return it
 	if v, ok := value.([]T); ok {
 		return v, nil
 	}
-	
+
 	// If value is []interface{}, convert each element
 	if slice, ok := value.([]interface{}); ok {
 		result := make([]T, len(slice))
@@ -94,33 +90,40 @@ func GetSlice[T any](provider Provider, key string) ([]T, error) {
 		}
 		return result, nil
 	}
-	
+
 	// Try JSON conversion for the entire value
 	jsonBytes, err := json.Marshal(value)
 	if err != nil {
 		return nil, fmt.Errorf("cannot convert %T to []%T: %w", value, *new(T), err)
 	}
-	
+
 	var result []T
 	if err := json.Unmarshal(jsonBytes, &result); err != nil {
 		return nil, fmt.Errorf("cannot convert %T to []%T: %w", value, *new(T), err)
 	}
-	
+
 	return result, nil
 }
 
-// GetMap reads a configuration value as a map[string]T
-func GetMap[T any](provider Provider, key string) (map[string]T, error) {
+// GetMapE reads a configuration value as a map[string]T.
+// The type parameter T specifies the value type of the map.
+// The provider parameter specifies the configuration provider to use.
+// The key parameter specifies the configuration key to retrieve.
+// Returns a map[string]T and nil error on success, or nil and an error if
+// the key is not found or the value cannot be converted to a map[string]T.
+// Supports conversion from map[string]T, map[string]interface{}, and uses JSON
+// marshaling/unmarshaling for complex type conversions.
+func GetMapE[T any](provider Provider, key string) (map[string]T, error) {
 	value, err := provider.Read(key)
 	if err != nil {
 		return nil, err
 	}
-	
+
 	// If value is already map[string]T, return it
 	if v, ok := value.(map[string]T); ok {
 		return v, nil
 	}
-	
+
 	// If value is map[string]interface{}, convert each value
 	if m, ok := value.(map[string]interface{}); ok {
 		result := make(map[string]T)
@@ -143,50 +146,50 @@ func GetMap[T any](provider Provider, key string) (map[string]T, error) {
 		}
 		return result, nil
 	}
-	
+
 	// Try JSON conversion for the entire value
 	jsonBytes, err := json.Marshal(value)
 	if err != nil {
 		return nil, fmt.Errorf("cannot convert %T to map[string]%T: %w", value, *new(T), err)
 	}
-	
+
 	var result map[string]T
 	if err := json.Unmarshal(jsonBytes, &result); err != nil {
 		return nil, fmt.Errorf("cannot convert %T to map[string]%T: %w", value, *new(T), err)
 	}
-	
+
 	return result, nil
 }
 
-// Bind reads configuration and binds it to a struct
-func Bind[T any](provider Provider, key string, target *T) error {
+// BindE reads configuration and binds it to a struct.
+// The type parameter T specifies the target struct type.
+// The provider parameter specifies the configuration provider to use.
+// The key parameter specifies the configuration key to retrieve.
+// The target parameter is a pointer to the struct to bind the configuration to.
+// Returns nil error on success, or an error if the key is not found or binding fails.
+// Uses JSON marshaling/unmarshaling for complex type conversions when direct
+// type assignment fails.
+func BindE[T any](provider Provider, key string, target *T) error {
 	value, err := provider.Read(key)
 	if err != nil {
 		return err
 	}
-	
+
 	// Try direct assignment if types match
 	if v, ok := value.(T); ok {
 		*target = v
 		return nil
 	}
-	
+
 	// Use JSON marshaling/unmarshaling for complex type conversion
 	jsonBytes, err := json.Marshal(value)
 	if err != nil {
 		return fmt.Errorf("cannot marshal value for binding: %w", err)
 	}
-	
+
 	if err := json.Unmarshal(jsonBytes, target); err != nil {
 		return fmt.Errorf("cannot unmarshal value for binding: %w", err)
 	}
-	
-	return nil
-}
 
-// MustBind reads configuration and binds it to a struct, panics on error
-func MustBind[T any](provider Provider, key string, target *T) {
-	if err := Bind(provider, key, target); err != nil {
-		panic(fmt.Sprintf("failed to bind configuration for key %s: %v", key, err))
-	}
+	return nil
 }

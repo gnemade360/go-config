@@ -1,5 +1,12 @@
 # go-config
 
+**Created by [Ganesh Nemade](https://github.com/passionintellectual)**
+
+[![Go Reference](https://pkg.go.dev/badge/github.com/passionintellectual/go-config.svg)](https://pkg.go.dev/github.com/passionintellectual/go-config)
+[![Go Report Card](https://goreportcard.com/badge/github.com/passionintellectual/go-config)](https://goreportcard.com/report/github.com/passionintellectual/go-config)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Go Version](https://img.shields.io/github/go-mod/go-version/passionintellectual/go-config)](https://github.com/passionintellectual/go-config)
+
 A powerful, flexible, and extensible configuration management library for Go applications. Supports multiple configuration sources with a clean, type-safe API and Go 1.18+ generics.
 
 ## Features
@@ -32,6 +39,11 @@ A powerful, flexible, and extensible configuration management library for Go app
 go get github.com/passionintellectual/go-config
 ```
 
+## Requirements
+
+- Go 1.21 or later
+- Support for Go modules
+
 ## Quick Start
 
 ```go
@@ -42,6 +54,7 @@ import (
     "log"
     
     "github.com/passionintellectual/go-config"
+    "github.com/passionintellectual/go-config/configutil"
 )
 
 func main() {
@@ -55,7 +68,7 @@ func main() {
     }
     
     // Use generic functions for type safety
-    port := config.GetWithDefault[int](manager.GetProvider(), "db.port", 5432)
+    port := configutil.GetInt(manager.GetProvider(), "db.port", 5432)
     
     fmt.Printf("Database: %s:%d\n", dbHost, port)
 }
@@ -95,21 +108,67 @@ seqProvider := config.NewSequentialProvider(
 value, err := seqProvider.Read("database.url")
 ```
 
-### Type-Safe Generic Access
+### Type-Safe Access with configutil
+
+The `configutil` package provides type-safe methods following a consistent naming convention:
+- Methods with "E" suffix return `(value, error)`
+- Methods without "E" suffix return value only (with defaults)
+- Methods with "Must" prefix panic on error
 
 ```go
-// Get primitive types
-name := config.GetWithDefault[string](provider, "app.name", "MyApp")
-timeout := config.MustGet[time.Duration](provider, "timeout")
-enabled := config.Get[bool](provider, "feature.enabled")
+import "github.com/passionintellectual/go-config/configutil"
 
-// Get complex types
-servers := config.GetSlice[string](provider, "servers")
-settings := config.GetMap[interface{}](provider, "settings")
+// Error-returning methods (with E suffix)
+name, err := configutil.GetStringE(provider, "app.name")
+port, err := configutil.GetIntE(provider, "server.port")
+
+// Safe methods with defaults (without E suffix)
+name := configutil.GetString(provider, "app.name", "MyApp")
+port := configutil.GetInt(provider, "server.port", 8080)
+timeout := configutil.GetDuration(provider, "timeout", 30*time.Second)
+
+// Must methods (panic on error)
+dbHost := configutil.MustGetString(provider, "database.host")
+
+// Generic methods for any type
+config := configutil.Get[ServerConfig](provider, "server", defaultConfig)
+servers := configutil.GetSlice[string](provider, "servers", []string{})
 
 // Bind to structs
 var dbConfig DatabaseConfig
-err := config.Bind(provider, "database", &dbConfig)
+err := configutil.BindE(provider, "database", &dbConfig)
+```
+
+### Global Configuration (Singleton Pattern)
+
+```go
+import "github.com/passionintellectual/go-config/configutil"
+
+// Initialize once at application startup
+func init() {
+    provider := sequential.New(
+        sequential.WithDefaultProviders(""),
+    )
+    configutil.Initialize(provider)
+}
+
+// Use anywhere in your application
+func main() {
+    // Get the provider and use with configutil methods
+    provider := configutil.GetProvider()
+    
+    port := configutil.GetInt(provider, "server.port", 8080)
+    dbHost := configutil.MustGetString(provider, "database.host")
+    
+    // Or read directly
+    value, err := configutil.Read("some.key")
+    
+    // Check if config exists
+    if configutil.IsSet(provider, "redis.url") {
+        redisURL := configutil.GetString(provider, "redis.url", "")
+        // Connect to Redis
+    }
+}
 ```
 
 ### Template Parsing
@@ -240,6 +299,25 @@ if err != nil {
 }
 ```
 
+## API Reference
+
+For detailed API documentation, visit [pkg.go.dev](https://pkg.go.dev/github.com/passionintellectual/go-config).
+
+### Core Packages
+
+- **[config](https://pkg.go.dev/github.com/passionintellectual/go-config)** - Main package with Provider interface and Manager
+- **[configutil](https://pkg.go.dev/github.com/passionintellectual/go-config/configutil)** - Type-safe configuration utilities
+- **[getters](https://pkg.go.dev/github.com/passionintellectual/go-config/getters)** - Simplified generic configuration access
+- **[goconfig](https://pkg.go.dev/github.com/passionintellectual/go-config/goconfig)** - Simple singleton-based configuration
+
+### Provider Packages
+
+- **[env](https://pkg.go.dev/github.com/passionintellectual/go-config/providers/env)** - Environment variable provider
+- **[file](https://pkg.go.dev/github.com/passionintellectual/go-config/providers/file)** - JSON/YAML file provider
+- **[flag](https://pkg.go.dev/github.com/passionintellectual/go-config/providers/flag)** - Command-line flag provider
+- **[sequential](https://pkg.go.dev/github.com/passionintellectual/go-config/providers/sequential)** - Layered provider chain
+- **[memoized](https://pkg.go.dev/github.com/passionintellectual/go-config/providers/memoized)** - Caching provider wrapper
+
 ## Best Practices
 
 1. **Use the Manager API** for simple use cases
@@ -249,10 +327,36 @@ if err != nil {
 5. **Handle errors appropriately** - some configs may be optional
 6. **Use templates** for dynamic configuration values
 
+## Author
+
+**Ganesh Nemade** - *Creator and Maintainer*
+- GitHub: [@passionintellectual](https://github.com/passionintellectual)
+- Email: [Contact via GitHub](https://github.com/passionintellectual)
+
 ## Contributing
 
 Contributions are welcome! Please feel free to submit a Pull Request.
 
+### Development
+
+```bash
+# Clone the repository
+git clone https://github.com/passionintellectual/go-config.git
+cd go-config
+
+# Install dependencies
+go mod tidy
+
+# Run tests
+go test ./...
+
+# Run tests with coverage
+go test -race -coverprofile=coverage.out ./...
+go tool cover -html=coverage.out
+```
+
 ## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+**Copyright (c) 2024 Ganesh Nemade**

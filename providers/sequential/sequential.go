@@ -166,6 +166,19 @@ func WithProvider(path string, provider config.Provider) Option {
 	}
 }
 
+// WithProviders adds multiple providers at once
+func WithProviders(providers ...config.Provider) Option {
+	return func(p *Provider) {
+		for _, provider := range providers {
+			p.ConfigProviders = append(p.ConfigProviders, ProviderInfo{
+				Provider: provider,
+				Path:     "",
+				Context:  nil,
+			})
+		}
+	}
+}
+
 // WithParser adds a parser to process configuration values
 func WithParser(parser Parser) Option {
 	return func(p *Provider) {

@@ -11,11 +11,8 @@ type Config struct {
 	data      map[string]interface{}
 }
 
-// Provider interface that all configuration providers must implement
-type Provider interface {
-	Name() string
-	Load() (map[string]interface{}, error)
-}
+// Provider interface has been moved to provider.go
+// It defines Read(key string) (interface{}, error) method
 
 // New creates a new Config instance
 func New() *Config {

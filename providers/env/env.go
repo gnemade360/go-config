@@ -1,9 +1,8 @@
 package env
 
 import (
+	"fmt"
 	"os"
-
-	"github.com/ganeshravi/go-config"
 )
 
 // Provider reads configuration from environment variables
@@ -20,6 +19,15 @@ func New(options ...Option) *Provider {
 	return p
 }
 
+// ConfigNotFoundError is returned when a configuration key is not found
+type ConfigNotFoundError struct {
+	Key string
+}
+
+func (e ConfigNotFoundError) Error() string {
+	return fmt.Sprintf("configuration key not found: %s", e.Key)
+}
+
 // Read retrieves a configuration value from environment variables
 func (p *Provider) Read(key string) (interface{}, error) {
 	envKey := key
@@ -30,7 +38,7 @@ func (p *Provider) Read(key string) (interface{}, error) {
 	if value, exists := os.LookupEnv(envKey); exists {
 		return value, nil
 	}
-	return nil, &config.ConfigNotFoundError{Key: key}
+	return nil, &ConfigNotFoundError{Key: key}
 }
 
 // Option is a function that configures the Provider
