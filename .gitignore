@@ -31,9 +31,13 @@ go.work.sum
 .idea/
 # .vscode/
 
-# Project specific directories
+# Project specific directories and symlinks
+.claude
 .claude/
+.cursor
 .cursor/
+.gdndocs
 .gdndocs/
+.taskmaster
 .taskmaster/
 CLAUDE.md
