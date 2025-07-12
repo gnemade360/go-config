@@ -68,7 +68,7 @@ func main() {
     }
 
     // Use generic functions for type safety
-    port := configutil.GetInt(manager.GetProvider(), "db.port", 5432)
+    port := configutil.Get[int](manager.GetProvider(), "db.port", 5432)
 
     fmt.Printf("Database: %s:%d\n", dbHost, port)
 }
@@ -306,9 +306,7 @@ For detailed API documentation, visit [pkg.go.dev](https://pkg.go.dev/github.com
 ### Core Packages
 
 - **[config](https://pkg.go.dev/github.com/gnemade360/go-config)** - Main package with Provider interface and Manager
-- **[configutil](https://pkg.go.dev/github.com/gnemade360/go-config/configutil)** - Type-safe configuration utilities
-- **[getters](https://pkg.go.dev/github.com/gnemade360/go-config/getters)** - Simplified generic configuration access
-- **[goconfig](https://pkg.go.dev/github.com/gnemade360/go-config/goconfig)** - Simple singleton-based configuration
+- **[configutil](https://pkg.go.dev/github.com/gnemade360/go-config/configutil)** - Type-safe configuration utilities with singleton support
 
 ### Provider Packages
 

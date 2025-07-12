@@ -150,7 +150,7 @@ func GetMapWithDefault[T any](provider Provider, key string, defaultValue map[st
 // The key parameter specifies the configuration key to retrieve.
 // Returns the converted value and true if successful, or the zero value of T and
 // false if the key is not found or conversion fails.
-// This is useful for implementing custom getters.
+// This is useful for implementing custom getter functions.
 func ReadValue[T any](provider Provider, key string) (T, bool) {
 	var zero T
 	value, err := provider.Read(key)
