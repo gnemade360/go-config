@@ -8,6 +8,7 @@ import (
 	"sync"
 
 	"github.com/gnemade360/go-config/internal/filereader"
+	"github.com/gnemade360/go-config/pkg/unmarshal"
 	"github.com/gnemade360/go-map-navigator/pkg/mapnavigator"
 )
 
@@ -27,7 +28,7 @@ type Option func(p *Provider)
 type Provider struct {
 	FilePath     string
 	FileContent  map[string]interface{}
-	UnMarshaller filereader.UnMarshaller
+	UnMarshaller unmarshal.Func
 	once         sync.Once
 	loadErr      error
 }
@@ -55,11 +56,7 @@ func (p *Provider) loadContent() error {
 		}
 
 		if p.UnMarshaller == nil {
-			p.UnMarshaller = filereader.GetUnMarshaller(p.FilePath)
-			if p.UnMarshaller == nil {
-				p.loadErr = fmt.Errorf("unsupported file type: %s", p.FilePath)
-				return
-			}
+			p.UnMarshaller = unmarshal.GetForFile(p.FilePath)
 		}
 
 		p.loadErr = p.UnMarshaller(byts, &p.FileContent)
@@ -162,7 +159,7 @@ func WithFilePath(filePath string) Option {
 }
 
 // WithUnMarshaller creates an Option that sets a custom unmarshaller
-func WithUnMarshaller(unmarshaller filereader.UnMarshaller) Option {
+func WithUnMarshaller(unmarshaller unmarshal.Func) Option {
 	return func(p *Provider) {
 		p.UnMarshaller = unmarshaller
 	}

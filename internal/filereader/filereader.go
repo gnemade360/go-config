@@ -1,17 +1,11 @@
 package filereader
 
 import (
-	"encoding/json"
 	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
-
-	"gopkg.in/yaml.v3"
 )
-
-// UnMarshaller is a function that unmarshals bytes into an interface
-type UnMarshaller func([]byte, interface{}) error
 
 // Path resolves and returns an absolute path
 func Path(pth ...string) (string, error) {
@@ -34,18 +28,6 @@ func Path(pth ...string) (string, error) {
 		return "", fmt.Errorf("failed to resolve absolute path for %q: %w", combined, err)
 	}
 	return abs, nil
-}
-
-// GetUnMarshaller returns an UnMarshaller based on file extension
-func GetUnMarshaller(path string) UnMarshaller {
-	ext := strings.ToLower(filepath.Ext(path))
-	switch ext {
-	case ".json":
-		return json.Unmarshal
-	case ".yml", ".yaml":
-		return yaml.Unmarshal
-	}
-	return nil
 }
 
 // Exists checks if a file exists
