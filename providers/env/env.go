@@ -1,13 +1,19 @@
 package env
 
 import (
-	"fmt"
 	"os"
+	"strings"
+	
+	"github.com/gnemade360/go-config/errors"
 )
+
+// TransformFunc is a function that transforms a key before lookup
+type TransformFunc func(string) string
 
 // Provider reads configuration from environment variables
 type Provider struct {
-	Prefix string // Optional prefix for environment variables
+	Prefix    string         // Optional prefix for environment variables
+	Transform TransformFunc  // Optional key transformation function
 }
 
 // New creates a new environment configuration provider
@@ -19,26 +25,24 @@ func New(options ...Option) *Provider {
 	return p
 }
 
-// ConfigNotFoundError is returned when a configuration key is not found
-type ConfigNotFoundError struct {
-	Key string
-}
-
-func (e ConfigNotFoundError) Error() string {
-	return fmt.Sprintf("configuration key not found: %s", e.Key)
-}
-
 // Read retrieves a configuration value from environment variables
 func (p *Provider) Read(key string) (interface{}, error) {
 	envKey := key
+	
+	// Apply transformation if set
+	if p.Transform != nil {
+		envKey = p.Transform(envKey)
+	}
+	
+	// Apply prefix if set
 	if p.Prefix != "" {
-		envKey = p.Prefix + key
+		envKey = p.Prefix + envKey
 	}
 	
 	if value, exists := os.LookupEnv(envKey); exists {
 		return value, nil
 	}
-	return nil, &ConfigNotFoundError{Key: key}
+	return nil, &errors.ConfigNotFoundError{Key: key}
 }
 
 // Option is a function that configures the Provider
@@ -49,4 +53,17 @@ func WithPrefix(prefix string) Option {
 	return func(p *Provider) {
 		p.Prefix = prefix
 	}
+}
+
+// WithTransform sets a transformation function for keys
+func WithTransform(transform TransformFunc) Option {
+	return func(p *Provider) {
+		p.Transform = transform
+	}
+}
+
+// ToUpper is a TransformFunc that converts keys to uppercase
+func ToUpper(key string) string {
+	// Replace dots with underscores and convert to uppercase
+	return strings.ToUpper(strings.ReplaceAll(key, ".", "_"))
 }

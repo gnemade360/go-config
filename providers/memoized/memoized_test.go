@@ -5,8 +5,8 @@ import (
 	"sync"
 	"sync/atomic"
 	"testing"
-
-	"github.com/gnemade360/go-config"
+	
+	configerrors "github.com/gnemade360/go-config/errors"
 )
 
 // mockProvider is a test provider that tracks read calls
@@ -39,7 +39,7 @@ func (m *mockProvider) Read(key string) (interface{}, error) {
 	if val, ok := m.data[key]; ok {
 		return val, nil
 	}
-	return nil, &config.ConfigNotFoundError{Key: key}
+	return nil, &configerrors.ConfigNotFoundError{Key: key}
 }
 
 func (m *mockProvider) getReadCount(key string) int32 {
@@ -54,7 +54,7 @@ func (m *mockProvider) getReadCount(key string) int32 {
 
 func TestNew(t *testing.T) {
 	mock := newMockProvider()
-	provider := New(mock)
+	provider := New(WithProvider(mock))
 
 	if provider == nil {
 		t.Fatal("Expected provider to be non-nil")
@@ -62,20 +62,18 @@ func TestNew(t *testing.T) {
 }
 
 func TestNewWithNilProvider(t *testing.T) {
-	defer func() {
-		if r := recover(); r == nil {
-			t.Error("Expected panic when creating memoized provider with nil")
-		}
-	}()
-
-	New(nil)
+	// Creating with nil provider is allowed, it will just not have a backing provider
+	provider := New(WithProvider(nil))
+	if provider == nil {
+		t.Fatal("Expected provider to be non-nil")
+	}
 }
 
 func TestMemoizationWorks(t *testing.T) {
 	mock := newMockProvider()
 	mock.data["test_key"] = "test_value"
 
-	provider := New(mock)
+	provider := New(WithProvider(mock))
 
 	// First read
 	value1, err := provider.Read("test_key")
@@ -110,7 +108,7 @@ func TestMemoizationOfErrors(t *testing.T) {
 	mock := newMockProvider()
 	// Don't add the key to mock.data so it returns an error
 
-	provider := New(mock)
+	provider := New(WithProvider(mock))
 
 	// First read - should return error
 	_, err1 := provider.Read("nonexistent_key")
@@ -145,7 +143,7 @@ func TestDifferentKeysDontShareCache(t *testing.T) {
 	mock.data["key1"] = "value1"
 	mock.data["key2"] = "value2"
 
-	provider := New(mock)
+	provider := New(WithProvider(mock))
 
 	// Read key1
 	value1, err := provider.Read("key1")
@@ -178,7 +176,7 @@ func TestConcurrentReads(t *testing.T) {
 	mock := newMockProvider()
 	mock.data["concurrent_key"] = "concurrent_value"
 
-	provider := New(mock)
+	provider := New(WithProvider(mock))
 
 	// Perform concurrent reads
 	var wg sync.WaitGroup
@@ -230,7 +228,7 @@ func TestNilValueCaching(t *testing.T) {
 	mock := newMockProvider()
 	mock.data["nil_key"] = nil
 
-	provider := New(mock)
+	provider := New(WithProvider(mock))
 
 	// First read
 	value1, err := provider.Read("nil_key")
@@ -260,7 +258,7 @@ func TestEmptyStringCaching(t *testing.T) {
 	mock := newMockProvider()
 	mock.data["empty_key"] = ""
 
-	provider := New(mock)
+	provider := New(WithProvider(mock))
 
 	// Read twice
 	for i := 0; i < 2; i++ {
@@ -284,7 +282,7 @@ func TestBooleanCaching(t *testing.T) {
 	mock.data["true_key"] = true
 	mock.data["false_key"] = false
 
-	provider := New(mock)
+	provider := New(WithProvider(mock))
 
 	// Test true value
 	for i := 0; i < 2; i++ {
@@ -325,7 +323,7 @@ func TestComplexTypeCaching(t *testing.T) {
 	}
 	mock.data["slice_key"] = []interface{}{"a", "b", "c"}
 
-	provider := New(mock)
+	provider := New(WithProvider(mock))
 
 	// Test map caching
 	for i := 0; i < 2; i++ {
@@ -369,11 +367,11 @@ func (e *errorProvider) Read(key string) (interface{}, error) {
 
 func TestCustomErrorCaching(t *testing.T) {
 	customErr := errors.New("custom error")
-	provider := New(&errorProvider{err: customErr})
+	provider := New(WithProvider(&errorProvider{err: customErr}))
 
 	// Read twice
-	err1 := provider.Read("any_key")
-	err2 := provider.Read("any_key")
+	_, err1 := provider.Read("any_key")
+	_, err2 := provider.Read("any_key")
 
 	// Both should be the same error
 	if err1 != customErr {

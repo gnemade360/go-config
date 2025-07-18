@@ -3,10 +3,12 @@ package configutil
 import (
 	"fmt"
 	"sync"
+	
+	"github.com/gnemade360/go-config/configprovider"
 )
 
 var (
-	globalProvider Provider
+	globalProvider configprovider.Provider
 	globalMutex    sync.RWMutex
 )
 
@@ -14,7 +16,7 @@ var (
 // The provider parameter specifies the configuration provider to use globally.
 // This should be called once at application startup before using any global
 // configuration functions. It is thread-safe and can be called multiple times.
-func Initialize(provider Provider) {
+func Initialize(provider configprovider.Provider) {
 	SetProvider(provider)
 }
 
@@ -22,7 +24,7 @@ func Initialize(provider Provider) {
 // The provider parameter specifies the configuration provider to use globally.
 // This can be called multiple times to change the provider at runtime.
 // It is thread-safe and will block until the provider is set.
-func SetProvider(provider Provider) {
+func SetProvider(provider configprovider.Provider) {
 	globalMutex.Lock()
 	defer globalMutex.Unlock()
 	globalProvider = provider
@@ -31,7 +33,7 @@ func SetProvider(provider Provider) {
 // GetProvider returns the current global configuration provider.
 // Returns nil if no provider has been set via Initialize or SetProvider.
 // This function is thread-safe.
-func GetProvider() Provider {
+func GetProvider() configprovider.Provider {
 	globalMutex.RLock()
 	defer globalMutex.RUnlock()
 	return globalProvider
@@ -41,7 +43,7 @@ func GetProvider() Provider {
 // This is an internal function used by global configuration functions
 // to ensure a provider is available before attempting to read configuration.
 // Panics with a descriptive message if no provider has been initialized.
-func ensureProvider() Provider {
+func ensureProvider() configprovider.Provider {
 	provider := GetProvider()
 	if provider == nil {
 		panic("configuration provider not initialized. Call configutil.Initialize() first")

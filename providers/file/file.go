@@ -7,6 +7,7 @@ import (
 	"strings"
 	"sync"
 
+	"github.com/gnemade360/go-config/errors"
 	"github.com/gnemade360/go-config/internal/filereader"
 	"github.com/gnemade360/go-config/pkg/unmarshal"
 	"github.com/gnemade360/go-map-navigator/pkg/mapnavigator"
@@ -15,16 +16,25 @@ import (
 const (
 	// EnvPrefix is the prefix used to identify environment variable references in configuration
 	EnvPrefix = "ENV|"
+	
+	// DefaultConfigFile is the default configuration file name
+	DefaultConfigFile = "config.yaml"
+	
+	// ConfigFlagName is the default flag name for config file path
+	ConfigFlagName = "config"
+	
+	// ConfigFlagDescription is the default description for config file flag
+	ConfigFlagDescription = "Path to the configuration file"
+	
+	// WildcardPrefix is the prefix used for wildcard key matching
+	WildcardPrefix = "*."
+	
+	// ErrorEmptyFilePath is the error message when file path is empty
+	ErrorEmptyFilePath = "expected filepath, received empty filepath"
+	
+	// ErrorEmptyKey is the error message when key is empty
+	ErrorEmptyKey = "expected key, received empty key"
 )
-
-// ConfigNotFoundError is returned when a configuration key is not found
-type ConfigNotFoundError struct {
-	Key string
-}
-
-func (e ConfigNotFoundError) Error() string {
-	return fmt.Sprintf("configuration key not found: %s", e.Key)
-}
 
 // Option is a function that configures a Provider
 type Option func(p *Provider)
@@ -42,7 +52,7 @@ type Provider struct {
 func (p *Provider) loadContent() error {
 	p.once.Do(func() {
 		if len(p.FilePath) == 0 {
-			p.loadErr = fmt.Errorf("expected filepath, received empty filepath")
+			p.loadErr = fmt.Errorf(ErrorEmptyFilePath)
 			return
 		}
 
@@ -78,15 +88,13 @@ func (p *Provider) processEnvReferences(data interface{}) {
 	switch v := data.(type) {
 	case map[string]interface{}:
 		for k, val := range v {
-			if strVal, ok := val.(string); ok && strings.HasPrefix(strings.ToUpper(k), EnvPrefix) {
-				// Remove ENV| prefix from key
-				newKey := k[len(EnvPrefix):]
-				if envVal, exists := os.LookupEnv(strVal); exists {
-					v[newKey] = envVal
-				} else {
-					v[newKey] = strVal
+			if strVal, ok := val.(string); ok && strings.HasPrefix(strVal, EnvPrefix) {
+				// Remove ENV| prefix from value and lookup env var
+				envKey := strVal[len(EnvPrefix):]
+				if envVal, exists := os.LookupEnv(envKey); exists {
+					v[k] = envVal
 				}
-				delete(v, k)
+				// If env var not found, keep the original value with ENV| prefix
 			} else {
 				// Recursively process nested structures
 				p.processEnvReferences(val)
@@ -102,11 +110,11 @@ func (p *Provider) processEnvReferences(data interface{}) {
 // Read reads a configuration value by key
 func (p *Provider) Read(key string) (interface{}, error) {
 	if len(key) == 0 {
-		return nil, fmt.Errorf("expected key, received empty key")
+		return nil, fmt.Errorf(ErrorEmptyKey)
 	}
 
-	if strings.HasPrefix(key, "*.") {
-		key = key[2:]
+	if strings.HasPrefix(key, WildcardPrefix) {
+		key = key[len(WildcardPrefix):]
 	}
 
 	// Load content once
@@ -118,7 +126,7 @@ func (p *Provider) Read(key string) (interface{}, error) {
 		mn := &mapnavigator.MapNavigator{}
 		return mn.VisitMapStringNode(p.FileContent, strings.Split(key, ".")...)
 	}
-	return nil, &ConfigNotFoundError{Key: key}
+	return nil, &errors.ConfigNotFoundError{Key: key}
 }
 
 // GetFilePathFromFlag reads a file path from a command-line flag
@@ -132,7 +140,7 @@ func GetFilePathFromFlag(flagName string, defaultValue string, description strin
 
 // GetDefaultFilePathFromFlag reads a file path from a command-line flag using default values
 func GetDefaultFilePathFromFlag(defaultConfigFilePath string) string {
-	return GetFilePathFromFlag("config", defaultConfigFilePath, "Path to the configuration file")
+	return GetFilePathFromFlag(ConfigFlagName, defaultConfigFilePath, ConfigFlagDescription)
 }
 
 // WithFilePathConfigFlag creates an Option that reads a file path from a command-line flag
@@ -183,7 +191,7 @@ func New(options ...Option) *Provider {
 	}
 
 	if len(provider.FilePath) == 0 {
-		provider.FilePath = "config.yaml" // Default file path
+		provider.FilePath = DefaultConfigFile
 	}
 
 	return provider

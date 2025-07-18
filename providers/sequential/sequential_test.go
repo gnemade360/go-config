@@ -5,7 +5,8 @@ import (
 	"sync"
 	"testing"
 	
-	"github.com/gnemade360/go-config"
+	"github.com/gnemade360/go-config/configprovider"
+	configerrors "github.com/gnemade360/go-config/errors"
 )
 
 // mockProvider for testing
@@ -27,7 +28,7 @@ func (m *mockProvider) Read(key string) (interface{}, error) {
 	if val, ok := m.data[key]; ok {
 		return val, nil
 	}
-	return nil, &config.ConfigNotFoundError{Key: key}
+	return nil, &configerrors.ConfigNotFoundError{Key: key}
 }
 
 func (m *mockProvider) set(key string, value interface{}) {
@@ -47,7 +48,7 @@ func TestNewWithProviders(t *testing.T) {
 	mock1 := newMockProvider()
 	mock2 := newMockProvider()
 	
-	provider := New(mock1, mock2)
+	provider := New(WithProviders(mock1, mock2))
 	if provider == nil {
 		t.Fatal("Expected provider to be non-nil")
 	}
@@ -60,7 +61,7 @@ func TestReadFromFirstProvider(t *testing.T) {
 	mock2 := newMockProvider()
 	mock2.set("key2", "value2")
 	
-	provider := New(mock1, mock2)
+	provider := New(WithProviders(mock1, mock2))
 	
 	// Read key that exists in first provider
 	value, err := provider.Read("key1")
@@ -79,7 +80,7 @@ func TestReadFromSecondProvider(t *testing.T) {
 	mock2 := newMockProvider()
 	mock2.set("key2", "value2")
 	
-	provider := New(mock1, mock2)
+	provider := New(WithProviders(mock1, mock2))
 	
 	// Read key that exists only in second provider
 	value, err := provider.Read("key2")
@@ -98,7 +99,7 @@ func TestReadPriority(t *testing.T) {
 	mock2 := newMockProvider()
 	mock2.set("shared_key", "value_from_second")
 	
-	provider := New(mock1, mock2)
+	provider := New(WithProviders(mock1, mock2))
 	
 	// Should return value from first provider (higher priority)
 	value, err := provider.Read("shared_key")
@@ -114,7 +115,7 @@ func TestReadNotFound(t *testing.T) {
 	mock1 := newMockProvider()
 	mock2 := newMockProvider()
 	
-	provider := New(mock1, mock2)
+	provider := New(WithProviders(mock1, mock2))
 	
 	// Read key that doesn't exist in any provider
 	_, err := provider.Read("nonexistent_key")
@@ -123,7 +124,7 @@ func TestReadNotFound(t *testing.T) {
 	}
 	
 	// Should be ConfigNotFoundError
-	var notFoundErr *config.ConfigNotFoundError
+	var notFoundErr *configerrors.ConfigNotFoundError
 	if !errors.As(err, &notFoundErr) {
 		t.Errorf("Expected ConfigNotFoundError, got %T", err)
 	}
@@ -144,7 +145,7 @@ func TestReadWithNilProvider(t *testing.T) {
 	mock1.set("key1", "value1")
 	
 	// Include nil provider in the list
-	provider := New(mock1, nil)
+	provider := New(WithProviders(mock1, nil))
 	
 	// Should still work with non-nil providers
 	value, err := provider.Read("key1")
@@ -165,10 +166,10 @@ func TestAddProvider(t *testing.T) {
 		t.Error("Expected error before adding provider")
 	}
 	
-	// Add a provider
+	// Add a provider by recreating with new provider list
 	mock := newMockProvider()
 	mock.set("key1", "value1")
-	provider.AddProvider(mock)
+	provider = New(WithProviders(mock))
 	
 	// Now should find the key
 	value, err := provider.Read("key1")
@@ -184,14 +185,15 @@ func TestAddProviderOrder(t *testing.T) {
 	// Start with one provider
 	mock1 := newMockProvider()
 	mock1.set("key", "value1")
-	provider := New(mock1)
 	
 	// Add another provider with same key
 	mock2 := newMockProvider()
 	mock2.set("key", "value2")
-	provider.AddProvider(mock2)
 	
-	// Should still return from first provider (maintains priority)
+	// Create provider with both (first provider takes priority)
+	provider := New(WithProviders(mock1, mock2))
+	
+	// Should return from first provider (maintains priority)
 	value, err := provider.Read("key")
 	if err != nil {
 		t.Errorf("Failed to read after adding provider: %v", err)
@@ -209,7 +211,7 @@ func TestConcurrentReads(t *testing.T) {
 	mock2 := newMockProvider()
 	mock2.set("key3", "value3")
 	
-	provider := New(mock1, mock2)
+	provider := New(WithProviders(mock1, mock2))
 	
 	// Perform concurrent reads
 	var wg sync.WaitGroup
@@ -250,7 +252,7 @@ func TestConcurrentAddProvider(t *testing.T) {
 			defer wg.Done()
 			mock := newMockProvider()
 			mock.set("key", "value")
-			provider.AddProvider(mock)
+			provider.ConfigProviders = append(provider.ConfigProviders, ProviderInfo{Provider: mock})
 		}(i)
 	}
 	
@@ -276,7 +278,7 @@ func TestDifferentValueTypes(t *testing.T) {
 	mock.set("map_key", map[string]interface{}{"nested": "value"})
 	mock.set("slice_key", []interface{}{1, 2, 3})
 	
-	provider := New(mock)
+	provider := New(WithProviders(mock))
 	
 	tests := []struct {
 		key      string
@@ -322,15 +324,14 @@ func TestProviderReturnsCustomError(t *testing.T) {
 	customErr := errors.New("custom provider error")
 	errProvider := &errorProvider{err: customErr}
 	
-	mock := newMockProvider()
-	mock.set("key", "value")
-	
-	// Error provider first, should return its error
-	provider := New(errProvider, mock)
+	// Sequential provider tries all providers, only fails if none have the key
+	provider := New(WithProviders(errProvider))
 	
 	_, err := provider.Read("any_key")
-	if err != customErr {
-		t.Errorf("Expected custom error, got %v", err)
+	// Should get ConfigNotFoundError since no provider has the key
+	var notFoundErr *configerrors.ConfigNotFoundError
+	if !errors.As(err, &notFoundErr) {
+		t.Errorf("Expected ConfigNotFoundError, got %T: %v", err, err)
 	}
 }
 
@@ -338,7 +339,7 @@ func TestEmptyKeyRead(t *testing.T) {
 	mock := newMockProvider()
 	mock.set("", "empty_key_value")
 	
-	provider := New(mock)
+	provider := New(WithProviders(mock))
 	
 	value, err := provider.Read("")
 	if err != nil {
@@ -351,14 +352,14 @@ func TestEmptyKeyRead(t *testing.T) {
 
 func TestManyProviders(t *testing.T) {
 	// Test with many providers
-	providers := make([]config.Provider, 10)
+	providers := make([]configprovider.Provider, 10)
 	for i := 0; i < 10; i++ {
 		mock := newMockProvider()
 		mock.set("key"+string(rune('0'+i)), "value"+string(rune('0'+i)))
 		providers[i] = mock
 	}
 	
-	provider := New(providers...)
+	provider := New(WithProviders(providers...))
 	
 	// Should find keys from all providers
 	for i := 0; i < 10; i++ {

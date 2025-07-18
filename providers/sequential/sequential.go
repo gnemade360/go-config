@@ -3,13 +3,16 @@ package sequential
 import (
 	"fmt"
 
-	"github.com/gnemade360/go-config"
+	"github.com/gnemade360/go-config/configprovider"
+	"github.com/gnemade360/go-config/errors"
 	"github.com/gnemade360/go-config/internal/filereader"
 	"github.com/gnemade360/go-config/providers/env"
 	"github.com/gnemade360/go-config/providers/file"
 	"github.com/gnemade360/go-config/providers/flag"
 	"github.com/gnemade360/go-config/providers/memoized"
 )
+
+
 
 // Parser is an interface for value parsers
 type Parser interface {
@@ -25,7 +28,7 @@ type Provider struct {
 
 // ProviderInfo wraps a provider with optional path prefix and context
 type ProviderInfo struct {
-	Provider config.Provider
+	Provider configprovider.Provider
 	Path     string
 	Context  map[string]string
 }
@@ -51,7 +54,7 @@ func (p *Provider) Read(key string) (interface{}, error) {
 	}
 
 	// If config key is not set in any of the config source, we need to send the error
-	return nil, &config.ConfigNotFoundError{Key: key}
+	return nil, &errors.ConfigNotFoundError{Key: key}
 }
 
 // processValue determines the type of value and delegates to the appropriate processing method
@@ -156,7 +159,7 @@ func WithFilePath(filePath string, path string) Option {
 }
 
 // WithProvider adds a provider to the sequential provider
-func WithProvider(path string, provider config.Provider) Option {
+func WithProvider(path string, provider configprovider.Provider) Option {
 	return func(p *Provider) {
 		p.ConfigProviders = append(p.ConfigProviders, ProviderInfo{
 			Provider: provider,
@@ -167,7 +170,7 @@ func WithProvider(path string, provider config.Provider) Option {
 }
 
 // WithProviders adds multiple providers at once
-func WithProviders(providers ...config.Provider) Option {
+func WithProviders(providers ...configprovider.Provider) Option {
 	return func(p *Provider) {
 		for _, provider := range providers {
 			p.ConfigProviders = append(p.ConfigProviders, ProviderInfo{

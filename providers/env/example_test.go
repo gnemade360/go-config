@@ -37,7 +37,7 @@ func ExampleWithPrefix() {
 	defer os.Unsetenv("APP_DATABASE_HOST")
 
 	// Read with prefix - looks for APP_DATABASE_HOST
-	host, err := provider.Read("database.host")
+	host, err := provider.Read("DATABASE_HOST")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -69,9 +69,9 @@ func ExampleWithTransform() {
 }
 
 // ExampleNestedKeys demonstrates reading nested configuration keys.
-func ExampleNestedKeys() {
-	// Create environment provider
-	provider := env.New()
+func ExampleProvider_nestedKeys() {
+	// Create environment provider with key transformation
+	provider := env.New(env.WithTransform(env.ToUpper))
 
 	// Set up nested environment variables
 	os.Setenv("DATABASE_CONNECTION_HOST", "db.example.com")
@@ -95,7 +95,7 @@ func ExampleNestedKeys() {
 }
 
 // ExampleMultipleOptions demonstrates combining multiple provider options.
-func ExampleMultipleOptions() {
+func ExampleProvider_multipleOptions() {
 	// Create environment provider with multiple options
 	provider := env.New(
 		env.WithPrefix("CONFIG_"),
@@ -124,7 +124,7 @@ func ExampleMultipleOptions() {
 }
 
 // ExampleErrorHandling demonstrates handling missing environment variables.
-func ExampleErrorHandling() {
+func ExampleProvider_errorHandling() {
 	// Create environment provider
 	provider := env.New()
 
@@ -138,7 +138,7 @@ func ExampleErrorHandling() {
 }
 
 // ExampleCaseSensitivity demonstrates case-sensitive environment variable handling.
-func ExampleCaseSensitivity() {
+func ExampleProvider_caseSensitivity() {
 	// Create environment provider
 	provider := env.New()
 

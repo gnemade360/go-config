@@ -10,6 +10,17 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
+const (
+	// ExtJSON is the file extension for JSON files
+	ExtJSON = ".json"
+	
+	// ExtYAML is the file extension for YAML files
+	ExtYAML = ".yaml"
+	
+	// ExtYML is the alternative file extension for YAML files
+	ExtYML = ".yml"
+)
+
 // Func is a function type for unmarshalling data
 type Func func([]byte, interface{}) error
 
@@ -17,9 +28,9 @@ type Func func([]byte, interface{}) error
 func GetForFile(filePath string) Func {
 	ext := strings.ToLower(filepath.Ext(filePath))
 	switch ext {
-	case ".json":
+	case ExtJSON:
 		return json.Unmarshal
-	case ".yaml", ".yml":
+	case ExtYAML, ExtYML:
 		return yaml.Unmarshal
 	default:
 		// Default to YAML

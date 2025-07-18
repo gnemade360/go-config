@@ -15,8 +15,11 @@ import (
 
 // ExampleNewManager demonstrates creating a configuration manager with a custom provider.
 func ExampleNewManager() {
-	// Create an environment provider
-	envProvider := config.NewEnvProvider(env.WithPrefix("APP_"))
+	// Create an environment provider with transform
+	envProvider := config.NewEnvProvider(
+		env.WithPrefix("APP_"),
+		env.WithTransform(env.ToUpper),
+	)
 
 	// Create a manager with the provider
 	manager := config.NewManager(envProvider)
@@ -37,8 +40,9 @@ func ExampleNewManager() {
 
 // ExampleNewDefaultManager demonstrates creating a manager with default providers.
 func ExampleNewDefaultManager() {
-	// Create a manager with default providers (env + flags)
-	manager := config.NewDefaultManager()
+	// Create a manager with env provider that has transform
+	envProvider := config.NewEnvProvider(env.WithTransform(env.ToUpper))
+	manager := config.NewManager(envProvider)
 
 	// Set up a test environment variable
 	os.Setenv("DEBUG", "true")
@@ -94,13 +98,12 @@ func ExampleNewSequentialProvider() {
 	defer os.Unsetenv("DATABASE_HOST")
 
 	// Create providers
-	envProvider := config.NewEnvProvider()
+	envProvider := config.NewEnvProvider(env.WithTransform(env.ToUpper))
 	fileProvider := config.NewFileProvider(file.WithFilePath(configFile))
 
 	// Create sequential provider with priority: env > file
 	seqProvider := config.NewSequentialProvider(
-		sequential.WithProvider("env", envProvider),
-		sequential.WithProvider("file", fileProvider),
+		sequential.WithProviders(envProvider, fileProvider),
 	)
 
 	// Read configuration - env value takes priority
@@ -164,8 +167,9 @@ func ExampleManager_GetString() {
 	os.Setenv("APP_NAME", "MyApplication")
 	defer os.Unsetenv("APP_NAME")
 
-	// Create manager
-	manager := config.NewDefaultManager()
+	// Create manager with env provider that has transform
+	envProvider := config.NewEnvProvider(env.WithTransform(env.ToUpper))
+	manager := config.NewManager(envProvider)
 
 	// Read string value
 	name, err := manager.GetString("app.name")
@@ -183,8 +187,9 @@ func ExampleManager_GetInt() {
 	os.Setenv("SERVER_PORT", "8080")
 	defer os.Unsetenv("SERVER_PORT")
 
-	// Create manager
-	manager := config.NewDefaultManager()
+	// Create manager with env provider that has transform
+	envProvider := config.NewEnvProvider(env.WithTransform(env.ToUpper))
+	manager := config.NewManager(envProvider)
 
 	// Read integer value
 	port, err := manager.GetInt("server.port")
@@ -202,8 +207,9 @@ func ExampleManager_GetBool() {
 	os.Setenv("DEBUG_MODE", "true")
 	defer os.Unsetenv("DEBUG_MODE")
 
-	// Create manager
-	manager := config.NewDefaultManager()
+	// Create manager with env provider that has transform
+	envProvider := config.NewEnvProvider(env.WithTransform(env.ToUpper))
+	manager := config.NewManager(envProvider)
 
 	// Read boolean value
 	debug, err := manager.GetBool("debug.mode")
@@ -221,8 +227,9 @@ func ExampleManager_MustGetString() {
 	os.Setenv("DATABASE_HOST", "localhost")
 	defer os.Unsetenv("DATABASE_HOST")
 
-	// Create manager
-	manager := config.NewDefaultManager()
+	// Create manager with env provider that has transform
+	envProvider := config.NewEnvProvider(env.WithTransform(env.ToUpper))
+	manager := config.NewManager(envProvider)
 
 	// Read string value (panics on error)
 	host := manager.MustGetString("database.host")
@@ -231,8 +238,8 @@ func ExampleManager_MustGetString() {
 	// Output: Database host: localhost
 }
 
-// ExampleConfigutil demonstrates type-safe configuration access with configutil.
-func ExampleConfigutil() {
+// Example_configutil demonstrates type-safe configuration access with configutil.
+func Example_configutil() {
 	// Create a temporary config file
 	configFile := "/tmp/configutil_example.json"
 	content := `{

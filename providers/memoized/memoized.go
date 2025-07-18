@@ -3,8 +3,11 @@ package memoized
 import (
 	"sync"
 
-	"github.com/gnemade360/go-config"
+	"github.com/gnemade360/go-config/configprovider"
+	"github.com/gnemade360/go-config/errors"
 )
+
+
 
 // ConfigKeyType represents a configuration key
 type ConfigKeyType struct {
@@ -22,7 +25,7 @@ type ConfigKeyResult struct {
 type Provider struct {
 	*sync.RWMutex
 	Store    *sync.Map
-	provider config.Provider
+	provider configprovider.Provider
 }
 
 // Invalidate removes a specific key from the cache, or clears the entire cache if key is nil
@@ -55,7 +58,7 @@ func (p *Provider) Read(key string) (interface{}, error) {
 		return result.ConfigEntry, result.Err
 	} else if p.provider == nil {
 		p.RUnlock()
-		return nil, &config.ConfigNotFoundError{Key: key}
+		return nil, &errors.ConfigNotFoundError{Key: key}
 	} else {
 		p.RUnlock()
 		p.Lock()
@@ -71,7 +74,7 @@ func (p *Provider) Read(key string) (interface{}, error) {
 			return value, err
 		}
 	}
-	return nil, &config.ConfigNotFoundError{Key: key}
+	return nil, &errors.ConfigNotFoundError{Key: key}
 }
 
 // LoadMap loads multiple key-value pairs into the cache
@@ -102,7 +105,7 @@ func New(opts ...Option) *Provider {
 }
 
 // WithProvider sets the underlying provider to cache results from
-func WithProvider(p config.Provider) Option {
+func WithProvider(p configprovider.Provider) Option {
 	return func(mp *Provider) {
 		mp.provider = p
 	}

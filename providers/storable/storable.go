@@ -3,7 +3,7 @@ package storable
 import (
 	"sync"
 	
-	"github.com/gnemade360/go-config"
+	"github.com/gnemade360/go-config/errors"
 )
 
 // Provider is a configuration provider that supports dynamic storage
@@ -28,7 +28,7 @@ func (p *Provider) Read(key string) (interface{}, error) {
 		return value, nil
 	}
 	
-	return nil, &config.ConfigNotFoundError{Key: key}
+	return nil, &errors.ConfigNotFoundError{Key: key}
 }
 
 // Store adds or updates a configuration value

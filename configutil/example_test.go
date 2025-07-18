@@ -18,8 +18,11 @@ func ExampleGetStringE() {
 	os.Setenv("APP_NAME", "MyApplication")
 	defer os.Unsetenv("APP_NAME")
 
-	// Create provider
-	provider := config.NewEnvProvider(env.WithPrefix("APP_"))
+	// Create provider with transform
+	provider := config.NewEnvProvider(
+		env.WithPrefix("APP_"),
+		env.WithTransform(env.ToUpper),
+	)
 
 	// Read string value
 	name, err := configutil.GetStringE(provider, "name")
@@ -49,8 +52,8 @@ func ExampleGetInt() {
 	os.Setenv("SERVER_PORT", "8080")
 	defer os.Unsetenv("SERVER_PORT")
 
-	// Create provider
-	provider := config.NewEnvProvider()
+	// Create provider with transform
+	provider := config.NewEnvProvider(env.WithTransform(env.ToUpper))
 
 	// Read integer value with default
 	port := configutil.GetInt(provider, "server.port", 3000)
@@ -65,8 +68,8 @@ func ExampleGetBool() {
 	os.Setenv("DEBUG", "true")
 	defer os.Unsetenv("DEBUG")
 
-	// Create provider
-	provider := config.NewEnvProvider()
+	// Create provider with transform
+	provider := config.NewEnvProvider(env.WithTransform(env.ToUpper))
 
 	// Read boolean value with default
 	debug := configutil.GetBool(provider, "debug", false)
@@ -81,8 +84,8 @@ func ExampleGetDuration() {
 	os.Setenv("TIMEOUT", "30s")
 	defer os.Unsetenv("TIMEOUT")
 
-	// Create provider
-	provider := config.NewEnvProvider()
+	// Create provider with transform
+	provider := config.NewEnvProvider(env.WithTransform(env.ToUpper))
 
 	// Read duration value with default
 	timeout := configutil.GetDuration(provider, "timeout", 10*time.Second)
@@ -139,8 +142,8 @@ func ExampleMustGetString() {
 	os.Setenv("DATABASE_HOST", "localhost")
 	defer os.Unsetenv("DATABASE_HOST")
 
-	// Create provider
-	provider := config.NewEnvProvider()
+	// Create provider with transform
+	provider := config.NewEnvProvider(env.WithTransform(env.ToUpper))
 
 	// Read string value (panics on error)
 	host := configutil.MustGetString(provider, "database.host")
@@ -260,8 +263,8 @@ func ExampleIsSet() {
 	os.Setenv("EXISTING_KEY", "value")
 	defer os.Unsetenv("EXISTING_KEY")
 
-	// Create provider
-	provider := config.NewEnvProvider()
+	// Create provider with transform
+	provider := config.NewEnvProvider(env.WithTransform(env.ToUpper))
 
 	// Check if keys exist
 	exists := configutil.IsSet(provider, "existing.key")
@@ -279,8 +282,8 @@ func ExampleGetTime() {
 	os.Setenv("CREATED_AT", "2024-01-01T00:00:00Z")
 	defer os.Unsetenv("CREATED_AT")
 
-	// Create provider
-	provider := config.NewEnvProvider()
+	// Create provider with transform
+	provider := config.NewEnvProvider(env.WithTransform(env.ToUpper))
 
 	// Read time value with default
 	defaultTime := time.Date(2023, 1, 1, 0, 0, 0, 0, time.UTC)

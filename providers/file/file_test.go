@@ -7,21 +7,21 @@ import (
 )
 
 func TestNewWithJSONFile(t *testing.T) {
-	provider := New("testdata/config.json")
+	provider := New(WithFilePath("testdata/config.json"))
 	if provider == nil {
 		t.Fatal("Expected provider to be non-nil")
 	}
 }
 
 func TestNewWithYAMLFile(t *testing.T) {
-	provider := New("testdata/config.yaml")
+	provider := New(WithFilePath("testdata/config.yaml"))
 	if provider == nil {
 		t.Fatal("Expected provider to be non-nil")
 	}
 }
 
 func TestNewWithNonExistentFile(t *testing.T) {
-	provider := New("testdata/nonexistent.json")
+	provider := New(WithFilePath("testdata/nonexistent.json"))
 	if provider == nil {
 		t.Fatal("Expected provider to be non-nil")
 	}
@@ -34,7 +34,7 @@ func TestNewWithNonExistentFile(t *testing.T) {
 }
 
 func TestReadFromJSON(t *testing.T) {
-	provider := New("testdata/config.json")
+	provider := New(WithFilePath("testdata/config.json"))
 	
 	tests := []struct {
 		key      string
@@ -73,7 +73,7 @@ func TestReadFromJSON(t *testing.T) {
 }
 
 func TestReadFromYAML(t *testing.T) {
-	provider := New("testdata/config.yaml")
+	provider := New(WithFilePath("testdata/config.yaml"))
 	
 	tests := []struct {
 		key      string
@@ -112,7 +112,7 @@ func TestReadFromYAML(t *testing.T) {
 }
 
 func TestReadArrayFromFile(t *testing.T) {
-	provider := New("testdata/config.json")
+	provider := New(WithFilePath("testdata/config.json"))
 	
 	value, err := provider.Read("features")
 	if err != nil {
@@ -137,7 +137,7 @@ func TestReadArrayFromFile(t *testing.T) {
 }
 
 func TestReadNestedObject(t *testing.T) {
-	provider := New("testdata/config.json")
+	provider := New(WithFilePath("testdata/config.json"))
 	
 	value, err := provider.Read("database")
 	if err != nil {
@@ -161,7 +161,7 @@ func TestEnvReferenceProcessing(t *testing.T) {
 	defer os.Unsetenv("TEST_ENV_VALUE")
 	defer os.Unsetenv("NESTED_ENV_VALUE")
 	
-	provider := New("testdata/config.json")
+	provider := New(WithFilePath("testdata/config.json"))
 	
 	// Test direct env reference
 	value, err := provider.Read("envRef")
@@ -187,7 +187,7 @@ func TestEnvReferenceNotSet(t *testing.T) {
 	os.Unsetenv("TEST_ENV_VALUE")
 	os.Unsetenv("NESTED_ENV_VALUE")
 	
-	provider := New("testdata/config.json")
+	provider := New(WithFilePath("testdata/config.json"))
 	
 	// When env var is not set, it should return the original ENV| reference
 	value, err := provider.Read("envRef")
@@ -200,7 +200,7 @@ func TestEnvReferenceNotSet(t *testing.T) {
 }
 
 func TestConcurrentReads(t *testing.T) {
-	provider := New("testdata/config.json")
+	provider := New(WithFilePath("testdata/config.json"))
 	
 	// Perform concurrent reads
 	done := make(chan bool)
@@ -226,7 +226,7 @@ func TestConcurrentReads(t *testing.T) {
 }
 
 func TestReadWithEmptyKey(t *testing.T) {
-	provider := New("testdata/config.json")
+	provider := New(WithFilePath("testdata/config.json"))
 	
 	_, err := provider.Read("")
 	if err == nil {
@@ -243,7 +243,7 @@ func TestFileWithInvalidJSON(t *testing.T) {
 	}
 	defer os.Remove(tempFile)
 	
-	provider := New(tempFile)
+	provider := New(WithFilePath(tempFile))
 	_, err = provider.Read("anykey")
 	if err == nil {
 		t.Error("Expected error when reading from invalid JSON file")
@@ -267,7 +267,7 @@ func TestFilePermissionError(t *testing.T) {
 		os.Remove(tempFile)
 	}()
 	
-	provider := New(tempFile)
+	provider := New(WithFilePath(tempFile))
 	_, err = provider.Read("key")
 	if err == nil {
 		t.Error("Expected error when reading from file with no permissions")
@@ -275,7 +275,7 @@ func TestFilePermissionError(t *testing.T) {
 }
 
 func TestReadSameKeyMultipleTimes(t *testing.T) {
-	provider := New("testdata/config.json")
+	provider := New(WithFilePath("testdata/config.json"))
 	
 	// Read the same key multiple times
 	for i := 0; i < 5; i++ {

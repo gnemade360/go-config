@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"reflect"
+
+	"github.com/gnemade360/go-config/configprovider"
 )
 
 // GetE reads a configuration value and converts it to the specified type T.
@@ -14,7 +16,7 @@ import (
 // an error if the key is not found or the value cannot be converted.
 // Uses JSON marshaling/unmarshaling for complex type conversions when direct
 // type assertion fails.
-func GetE[T any](provider Provider, key string) (T, error) {
+func GetE[T any](provider configprovider.Provider, key string) (T, error) {
 	var zero T
 
 	value, err := provider.Read(key)
@@ -59,7 +61,7 @@ func GetE[T any](provider Provider, key string) (T, error) {
 // the key is not found or the value cannot be converted to a slice of T.
 // Supports conversion from []T, []interface{}, and uses JSON marshaling/unmarshaling
 // for complex type conversions.
-func GetSliceE[T any](provider Provider, key string) ([]T, error) {
+func GetSliceE[T any](provider configprovider.Provider, key string) ([]T, error) {
 	value, err := provider.Read(key)
 	if err != nil {
 		return nil, err
@@ -113,7 +115,7 @@ func GetSliceE[T any](provider Provider, key string) ([]T, error) {
 // the key is not found or the value cannot be converted to a map[string]T.
 // Supports conversion from map[string]T, map[string]interface{}, and uses JSON
 // marshaling/unmarshaling for complex type conversions.
-func GetMapE[T any](provider Provider, key string) (map[string]T, error) {
+func GetMapE[T any](provider configprovider.Provider, key string) (map[string]T, error) {
 	value, err := provider.Read(key)
 	if err != nil {
 		return nil, err
@@ -169,7 +171,7 @@ func GetMapE[T any](provider Provider, key string) (map[string]T, error) {
 // Returns nil error on success, or an error if the key is not found or binding fails.
 // Uses JSON marshaling/unmarshaling for complex type conversions when direct
 // type assignment fails.
-func BindE[T any](provider Provider, key string, target *T) error {
+func BindE[T any](provider configprovider.Provider, key string, target *T) error {
 	value, err := provider.Read(key)
 	if err != nil {
 		return err

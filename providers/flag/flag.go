@@ -8,8 +8,13 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/gnemade360/go-config"
+	"github.com/gnemade360/go-config/errors"
 	"github.com/gnemade360/go-map-navigator/pkg/mapnavigator"
+)
+
+const (
+	// DotEscapeString is used to escape dots in flag values to handle nested keys
+	DotEscapeString = "<DDOOTT>"
 )
 
 // Provider reads configuration from command-line flags
@@ -33,7 +38,7 @@ func (p *Provider) Read(key string) (interface{}, error) {
 			arg := arr[i]
 
 			// Escape dots in values to handle nested keys
-			arg = strings.ReplaceAll(arg, "\\.", "<DDOOTT>")
+			arg = strings.ReplaceAll(arg, "\\.", DotEscapeString)
 
 			doubleDash := strings.HasPrefix(arg, "--")
 			singleDash := strings.HasPrefix(arg, "-")
@@ -93,7 +98,7 @@ func (p *Provider) Read(key string) (interface{}, error) {
 		return val, nil
 	}
 
-	return nil, &config.ConfigNotFoundError{Key: key}
+	return nil, &errors.ConfigNotFoundError{Key: key}
 }
 
 // GetArgs returns command-line arguments. Can be overridden for testing.
@@ -115,13 +120,13 @@ func GetMapFromKeyValue(mp map[string]interface{}, key string, value interface{}
 	if len(keyArr) == 1 {
 		// Handle different types of values
 		if valstr, isstr := value.(string); isstr {
-			value = strings.ReplaceAll(valstr, "<DDOOTT>", ".")
+			value = strings.ReplaceAll(valstr, DotEscapeString, ".")
 		}
 		mp[keyArr[0]] = value
 		return mp
 	}
 	for i, keyPart := range keyArr {
-		keyPart = strings.ReplaceAll(keyPart, "<DDOOTT>", ".")
+		keyPart = strings.ReplaceAll(keyPart, DotEscapeString, ".")
 		if i == 0 {
 			if itm, ok := mp[keyPart]; ok {
 				tmp = itm.(map[string]interface{})
@@ -136,12 +141,12 @@ func GetMapFromKeyValue(mp map[string]interface{}, key string, value interface{}
 					itmStr := fmt.Sprintf("%v", itm)
 					valueStr := fmt.Sprintf("%v", value)
 					sprintf := itmStr + valueStr
-					sprintf = strings.ReplaceAll(sprintf, "<DDOOTT>", ".")
+					sprintf = strings.ReplaceAll(sprintf, DotEscapeString, ".")
 					tmp[keyPart] = sprintf
 				}
 			} else {
 				if valstr, isstr := value.(string); isstr && len(valstr) > 0 {
-					value = strings.ReplaceAll(valstr, "<DDOOTT>", ".")
+					value = strings.ReplaceAll(valstr, DotEscapeString, ".")
 				}
 				tmp[keyPart] = value
 			}

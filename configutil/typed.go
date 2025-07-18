@@ -5,6 +5,8 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/gnemade360/go-config/configprovider"
 )
 
 // GetStringE reads a string configuration value from the provider.
@@ -13,7 +15,7 @@ import (
 // Returns the string value and nil error on success, or an empty string and
 // error if the key is not found or cannot be accessed.
 // Non-string values are converted to strings using fmt.Sprint.
-func GetStringE(provider Provider, key string) (string, error) {
+func GetStringE(provider configprovider.Provider, key string) (string, error) {
 	value, err := provider.Read(key)
 	if err != nil {
 		return "", err
@@ -34,7 +36,7 @@ func GetStringE(provider Provider, key string) (string, error) {
 // Returns the int value and nil error on success, or zero and error if the key
 // is not found or the value cannot be converted to an int.
 // Supports conversion from int, int32, int64, float32, float64, and string types.
-func GetIntE(provider Provider, key string) (int, error) {
+func GetIntE(provider configprovider.Provider, key string) (int, error) {
 	value, err := provider.Read(key)
 	if err != nil {
 		return 0, err
@@ -65,7 +67,7 @@ func GetIntE(provider Provider, key string) (int, error) {
 // Returns the int64 value and nil error on success, or zero and error if the key
 // is not found or the value cannot be converted to an int64.
 // Supports conversion from int, int32, int64, float32, float64, and string types.
-func GetInt64E(provider Provider, key string) (int64, error) {
+func GetInt64E(provider configprovider.Provider, key string) (int64, error) {
 	value, err := provider.Read(key)
 	if err != nil {
 		return 0, err
@@ -96,7 +98,7 @@ func GetInt64E(provider Provider, key string) (int64, error) {
 // Returns the float64 value and nil error on success, or zero and error if the key
 // is not found or the value cannot be converted to a float64.
 // Supports conversion from float32, float64, int, int32, int64, and string types.
-func GetFloat64E(provider Provider, key string) (float64, error) {
+func GetFloat64E(provider configprovider.Provider, key string) (float64, error) {
 	value, err := provider.Read(key)
 	if err != nil {
 		return 0, err
@@ -128,7 +130,7 @@ func GetFloat64E(provider Provider, key string) (float64, error) {
 // is not found or the value cannot be converted to a bool.
 // Supports conversion from bool, string (using strconv.ParseBool), and numeric types
 // (non-zero numbers are considered true).
-func GetBoolE(provider Provider, key string) (bool, error) {
+func GetBoolE(provider configprovider.Provider, key string) (bool, error) {
 	value, err := provider.Read(key)
 	if err != nil {
 		return false, err
@@ -155,7 +157,7 @@ func GetBoolE(provider Provider, key string) (bool, error) {
 // is not found or the value cannot be converted to a Duration.
 // Supports parsing from string (e.g., "5s", "1h30m") using time.ParseDuration,
 // or numeric values (interpreted as nanoseconds).
-func GetDurationE(provider Provider, key string) (time.Duration, error) {
+func GetDurationE(provider configprovider.Provider, key string) (time.Duration, error) {
 	value, err := provider.Read(key)
 	if err != nil {
 		return 0, err
@@ -185,7 +187,7 @@ func GetDurationE(provider Provider, key string) (time.Duration, error) {
 // is not found or the value cannot be converted to a string slice.
 // Supports conversion from []string, []interface{}, and comma-separated strings.
 // Empty strings are converted to empty slices.
-func GetStringSliceE(provider Provider, key string) ([]string, error) {
+func GetStringSliceE(provider configprovider.Provider, key string) ([]string, error) {
 	value, err := provider.Read(key)
 	if err != nil {
 		return nil, err
@@ -228,7 +230,7 @@ func GetStringSliceE(provider Provider, key string) ([]string, error) {
 // Returns the int slice and nil error on success, or nil and error if the key
 // is not found or the value cannot be converted to an int slice.
 // Uses the generic GetSliceE function for conversion.
-func GetIntSliceE(provider Provider, key string) ([]int, error) {
+func GetIntSliceE(provider configprovider.Provider, key string) ([]int, error) {
 	return GetSliceE[int](provider, key)
 }
 
@@ -239,7 +241,7 @@ func GetIntSliceE(provider Provider, key string) ([]int, error) {
 // is not found or the value cannot be converted to a string map.
 // Supports conversion from map[string]string, map[string]interface{}, and
 // map[interface{}]interface{} (common in YAML).
-func GetStringMapE(provider Provider, key string) (map[string]string, error) {
+func GetStringMapE(provider configprovider.Provider, key string) (map[string]string, error) {
 	value, err := provider.Read(key)
 	if err != nil {
 		return nil, err
@@ -279,7 +281,7 @@ func GetStringMapE(provider Provider, key string) (map[string]string, error) {
 // is not found or the value cannot be converted to a time.Time.
 // Supports RFC3339, RFC3339Nano, and common date formats including:
 // "2006-01-02T15:04:05", "2006-01-02 15:04:05", and "2006-01-02".
-func GetTimeE(provider Provider, key string) (time.Time, error) {
+func GetTimeE(provider configprovider.Provider, key string) (time.Time, error) {
 	value, err := provider.Read(key)
 	if err != nil {
 		return time.Time{}, err
