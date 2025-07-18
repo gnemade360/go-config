@@ -12,6 +12,11 @@ import (
 	"github.com/gnemade360/go-map-navigator/pkg/mapnavigator"
 )
 
+const (
+	// EnvPrefix is the prefix used to identify environment variable references in configuration
+	EnvPrefix = "ENV|"
+)
+
 // ConfigNotFoundError is returned when a configuration key is not found
 type ConfigNotFoundError struct {
 	Key string
@@ -73,9 +78,9 @@ func (p *Provider) processEnvReferences(data interface{}) {
 	switch v := data.(type) {
 	case map[string]interface{}:
 		for k, val := range v {
-			if strVal, ok := val.(string); ok && strings.HasPrefix(strings.ToUpper(k), "ENV|") {
+			if strVal, ok := val.(string); ok && strings.HasPrefix(strings.ToUpper(k), EnvPrefix) {
 				// Remove ENV| prefix from key
-				newKey := k[4:]
+				newKey := k[len(EnvPrefix):]
 				if envVal, exists := os.LookupEnv(strVal); exists {
 					v[newKey] = envVal
 				} else {
