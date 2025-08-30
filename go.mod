@@ -1,6 +1,6 @@
 module github.com/gnemade360/go-config
 
-go 1.21
+go 1.24
 
 require (
 	github.com/gnemade360/go-map-navigator v0.1.0
