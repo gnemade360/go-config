@@ -35,6 +35,14 @@ type ProviderInfo struct {
 
 // Read reads a configuration value by trying each provider in sequence
 func (p *Provider) Read(key string) (interface{}, error) {
+	// Check memoized cache first if enabled
+	if p.Memo != nil {
+		if value, err := p.Memo.Read(key); err == nil {
+			return value, nil
+		}
+		// Continue to read from providers if not in cache
+	}
+	
 	for _, providerInfo := range p.ConfigProviders {
 		if providerInfo.Provider != nil {
 			k := key
@@ -48,13 +56,26 @@ func (p *Provider) Read(key string) (interface{}, error) {
 				if err != nil {
 					return nil, err
 				}
+				
+				// Cache the value if memoization is enabled
+				if p.Memo != nil {
+					p.Memo.Set(key, value, nil)
+				}
+				
 				return value, nil
 			}
 		}
 	}
 
 	// If config key is not set in any of the config source, we need to send the error
-	return nil, &errors.ConfigNotFoundError{Key: key}
+	notFoundErr := &errors.ConfigNotFoundError{Key: key}
+	
+	// Cache the not found error if memoization is enabled
+	if p.Memo != nil {
+		p.Memo.Set(key, nil, notFoundErr)
+	}
+	
+	return nil, notFoundErr
 }
 
 // processValue determines the type of value and delegates to the appropriate processing method
@@ -186,6 +207,13 @@ func WithProviders(providers ...configprovider.Provider) Option {
 func WithParser(parser Parser) Option {
 	return func(p *Provider) {
 		p.Parsers = append(p.Parsers, parser)
+	}
+}
+
+// WithMemoization enables caching of configuration values for improved performance
+func WithMemoization() Option {
+	return func(p *Provider) {
+		p.Memo = memoized.New()
 	}
 }
 
