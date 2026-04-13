@@ -10,6 +10,7 @@ import (
 	"github.com/gnemade360/go-config/errors"
 	"github.com/gnemade360/go-config/internal/filereader"
 	"github.com/gnemade360/go-config/pkg/unmarshal"
+	"github.com/gnemade360/go-gv/pkg/gv"
 	"github.com/gnemade360/go-map-navigator/pkg/mapnavigator"
 )
 
@@ -92,7 +93,7 @@ func (p *Provider) processEnvReferences(data interface{}) {
 				// Remove ENV| prefix from value and lookup env var
 				envKey := strVal[len(EnvPrefix):]
 				if envVal, exists := os.LookupEnv(envKey); exists {
-					v[k] = envVal
+					v[k] = inferType(envVal)
 				}
 				// If env var not found, keep the original value with ENV| prefix
 			} else {
@@ -105,6 +106,23 @@ func (p *Provider) processEnvReferences(data interface{}) {
 			p.processEnvReferences(item)
 		}
 	}
+}
+
+// inferType attempts to convert a string value to its most specific Go type
+// (int, float, bool) so that downstream JSON-based binding works correctly.
+func inferType(s string) interface{} {
+	g := gv.NewGV(s)
+
+	if v, err := g.BoolE(); err == nil {
+		return v
+	}
+	if v, err := g.Int64E(); err == nil {
+		return v
+	}
+	if v, err := g.Float64E(); err == nil {
+		return v
+	}
+	return s
 }
 
 // Read reads a configuration value by key

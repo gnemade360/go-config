@@ -1,5 +1,7 @@
 github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
+github.com/gnemade360/go-gv v0.0.0-20260406070137-89fb71f7c342 h1:OCf5FyFqO6ds3qGA33HkxeYJf4ahTPaWw5PRigo6IzY=
+github.com/gnemade360/go-gv v0.0.0-20260406070137-89fb71f7c342/go.mod h1:vJ2q+LFFTnMWw8fgG9AGftL8nEIg9l5Hb175vEngsX4=
 github.com/gnemade360/go-map-navigator v0.1.0 h1:Dz7HJEoBwxvVTdeX2iDO3QCaEDuAoIKDSOuquwJIBdA=
 github.com/gnemade360/go-map-navigator v0.1.0/go.mod h1:oGHb9Ri+oODEtvIHq3+T8VUdiEYKlxKh0RZ8qpdqy90=
 github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZbAQM=
